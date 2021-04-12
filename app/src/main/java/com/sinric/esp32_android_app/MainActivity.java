@@ -222,7 +222,10 @@ public class MainActivity extends AppCompatActivity implements  OnBluetoothDevic
             mConnectionState = BluetoothLeService.ACTION_GATT_CONNECTED;
             swipeRefresh.setRefreshing(false);
 
-            inputMessage();
+            String example = new String("7");
+            sendStringToESP32(example);
+            //inputMessage();
+
 
         } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
             Log.i("MainActivity", "ACTION_GATT_DISCONNECTED!!!");
@@ -248,6 +251,12 @@ public class MainActivity extends AppCompatActivity implements  OnBluetoothDevic
         }
     };
 
+    private void sendStringToESP32(String value){
+        Log.i("alex", value);
+        Log.i("alex", String.valueOf(value.getBytes()));
+        btSendBytes(value.getBytes());
+    }
+
     private void inputMessage() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Message to send");
@@ -261,7 +270,8 @@ public class MainActivity extends AppCompatActivity implements  OnBluetoothDevic
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String text = input.getText().toString();
-                btSendBytes(text.getBytes());
+                Log.i("alex",text);
+                sendStringToESP32(text);
             }
         });
 
@@ -269,6 +279,7 @@ public class MainActivity extends AppCompatActivity implements  OnBluetoothDevic
         builder.show();
     }
     public void btSendBytes(byte[] data) {
+        Log.i("alex", String.valueOf(data));
         if (mBluetoothLeService != null &&
                 mConnectionState.equals(BluetoothLeService.ACTION_GATT_CONNECTED)) {
             mBluetoothLeService.writeCharacteristic(data);
