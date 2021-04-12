@@ -38,6 +38,7 @@ import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 public class MainActivity extends AppCompatActivity implements  OnBluetoothDeviceClickedListener {
@@ -215,6 +216,7 @@ public class MainActivity extends AppCompatActivity implements  OnBluetoothDevic
         @Override
         public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
+        // TODO: first we need to discover then we need to connect, the input message shows only after ACTION_GATT_SERVICES_DISCOVERED
         if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
             Log.i("MainActivity", "ACTION_GATT_CONNECTED!!!");
             showMsg("Connected device ..");
@@ -222,8 +224,6 @@ public class MainActivity extends AppCompatActivity implements  OnBluetoothDevic
             mConnectionState = BluetoothLeService.ACTION_GATT_CONNECTED;
             swipeRefresh.setRefreshing(false);
 
-            String example = new String("7");
-            sendStringToESP32(example);
             //inputMessage();
 
 
@@ -233,7 +233,10 @@ public class MainActivity extends AppCompatActivity implements  OnBluetoothDevic
             mConnectionState = BluetoothLeService.ACTION_GATT_DISCONNECTED;
             swipeRefresh.setRefreshing(false);
         } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+            Log.i("alex", "service discovered");
             mBluetoothLeService.getSupportedGattServices();
+            String example = new String("7");
+            sendStringToESP32(example);
         } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
             final byte[] data = intent.getByteArrayExtra(BluetoothLeService.EXTRA_DATA);
 
@@ -252,6 +255,12 @@ public class MainActivity extends AppCompatActivity implements  OnBluetoothDevic
     };
 
     private void sendStringToESP32(String value){
+        Log.i("alex", "sleeping 3");
+        try {
+            TimeUnit.SECONDS.sleep(3);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         Log.i("alex", value);
         Log.i("alex", String.valueOf(value.getBytes()));
         btSendBytes(value.getBytes());
