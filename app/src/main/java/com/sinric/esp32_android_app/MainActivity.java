@@ -233,10 +233,15 @@ public class MainActivity extends AppCompatActivity implements  OnBluetoothDevic
             mConnectionState = BluetoothLeService.ACTION_GATT_DISCONNECTED;
             swipeRefresh.setRefreshing(false);
         } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+
             Log.i("alex", "service discovered");
             mBluetoothLeService.getSupportedGattServices();
-            String example = new String("7");
-            sendStringToESP32(example);
+
+            sendStringToESP32("7");
+            sendStringToESP32("1");
+            sendStringToESP32("5");
+            sendStringToESP32("test");
+
         } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
             final byte[] data = intent.getByteArrayExtra(BluetoothLeService.EXTRA_DATA);
 
