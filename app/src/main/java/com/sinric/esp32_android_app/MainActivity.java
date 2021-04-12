@@ -63,6 +63,8 @@ public class MainActivity extends AppCompatActivity implements  OnBluetoothDevic
     private String mDeviceName;
     private String mDeviceAddress;
 
+    private SelfDriving selfDriving = new SelfDriving();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -216,7 +218,6 @@ public class MainActivity extends AppCompatActivity implements  OnBluetoothDevic
         @Override
         public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
-        // TODO: first we need to discover then we need to connect, the input message shows only after ACTION_GATT_SERVICES_DISCOVERED
         if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
             Log.i("MainActivity", "ACTION_GATT_CONNECTED!!!");
             showMsg("Connected device ..");
@@ -236,11 +237,7 @@ public class MainActivity extends AppCompatActivity implements  OnBluetoothDevic
 
             Log.i("alex", "service discovered");
             mBluetoothLeService.getSupportedGattServices();
-
-            sendStringToESP32("7");
-            sendStringToESP32("1");
-            sendStringToESP32("5");
-            sendStringToESP32("test");
+            selfDriving.start(MainActivity.this);
 
         } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
             final byte[] data = intent.getByteArrayExtra(BluetoothLeService.EXTRA_DATA);
@@ -259,17 +256,7 @@ public class MainActivity extends AppCompatActivity implements  OnBluetoothDevic
         }
     };
 
-    private void sendStringToESP32(String value){
-        Log.i("alex", "sleeping 3");
-        try {
-            TimeUnit.SECONDS.sleep(3);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        Log.i("alex", value);
-        Log.i("alex", String.valueOf(value.getBytes()));
-        btSendBytes(value.getBytes());
-    }
+
 
     private void inputMessage() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -285,7 +272,7 @@ public class MainActivity extends AppCompatActivity implements  OnBluetoothDevic
             public void onClick(DialogInterface dialog, int which) {
                 String text = input.getText().toString();
                 Log.i("alex",text);
-                sendStringToESP32(text);
+               // sendStringToESP32(text);
             }
         });
 
@@ -343,6 +330,20 @@ public class MainActivity extends AppCompatActivity implements  OnBluetoothDevic
 
                 Log.i("MainActivity","notifyDataSetChanged() " + "BluetoothName :　" + device.getName() +
                         "  BluetoothAddress :　" + device.getAddress());
+
+                if( "MyESP32".equals(device.getName())) {
+                    Log.i("alex", "we connected to MyESP32.. automatically connecting");
+
+                    if (mBluetoothLeService != null) {
+
+                        if (mBluetoothLeService.connect(device.getAddress())) {
+                            showMsg("Attempt to connect device : " + device.getName());
+
+                            mConnectionState = BluetoothLeService.ACTION_GATT_CONNECTING;
+                            swipeRefresh.setRefreshing(true);
+                        }
+                    }
+                }
             }
         }
     }
