@@ -13,11 +13,64 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class SelfDriving {
 
     MainActivity activity;
+    String last_command; // "FORWARD", .. , ""
+
+    private void boatStop(){
+        sendStringToESP32("5");
+    }
+
+    private void boatForward(){
+        sendStringToESP32("1");
+    }
+
+    private void boatBackward(){
+        sendStringToESP32("2");
+    }
+
+    private void boatLeft(){
+        sendStringToESP32("3");
+    }
+
+    private void boatRight(){
+        sendStringToESP32("4");
+    }
+
+    private void boatLowPower(){
+        sendStringToESP32("6");
+    }
+
+    private void boatMidPower(){
+        sendStringToESP32("7");
+    }
+
+    private void boatHighPower(){
+        sendStringToESP32("8");
+    }
+
+    private void runHerokuCommand(String command){
+        switch(command) {
+            case "FORWARD":
+                boatForward();
+                break;
+            case "LEFT":
+                boatLeft();
+                break;
+            case "RIGHT":
+                boatRight();
+                break;
+            case "BACK":
+                boatBackward();
+                break;
+            default:
+                boatStop();
+        }
+    }
 
     private void sendStringToESP32(String value){
         Log.i("alex", "sleeping 1");
@@ -42,7 +95,28 @@ public class SelfDriving {
 
                     @Override
                     public void onResponse(JSONObject response) {
-                        Log.i("selfdriving", String.valueOf(response));
+                        try {
+                            if(response.getString("command") == "null"){
+                                last_command = "null";
+                            } else {
+                                last_command = response.getJSONArray("command").getString(0);
+                            }
+                            Log.i("selfdriving", last_command);
+                            boatStop();
+                            boatLowPower();
+                            runHerokuCommand(last_command);
+                            Log.i("alex", "sleeping 3");
+                            try {
+                                TimeUnit.SECONDS.sleep(1);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            boatStop();
+
+                        } catch (JSONException e) {
+                            Log.e("selfdriving", "no command key from heroku! server down or corrupted?");
+                            e.printStackTrace();
+                        }
                     }
                 }, new Response.ErrorListener() {
 
