@@ -20,6 +20,7 @@ public class SelfDriving {
 
     MainActivity activity;
     String last_command; // "FORWARD", .. , ""
+    int clock = 10;
 
     private void boatStop(){
         sendStringToESP32("5");
@@ -84,7 +85,7 @@ public class SelfDriving {
         activity.btSendBytes(value.getBytes());
     }
 
-    private void heroku_readLastCommand(){
+    private void selfdriving_step(){
         // Initialize a new RequestQueue instance
         RequestQueue requestQueue;
         requestQueue = Volley.newRequestQueue(activity.getApplicationContext());
@@ -105,13 +106,18 @@ public class SelfDriving {
                             boatStop();
                             boatLowPower();
                             runHerokuCommand(last_command);
-                            Log.i("alex", "sleeping 3");
                             try {
                                 TimeUnit.SECONDS.sleep(1);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
                             boatStop();
+                            try {
+                                TimeUnit.SECONDS.sleep(clock);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            selfdriving_step();
 
                         } catch (JSONException e) {
                             Log.e("selfdriving", "no command key from heroku! server down or corrupted?");
@@ -123,7 +129,6 @@ public class SelfDriving {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         // TODO: Handle error
-
                     }
                 });
 
@@ -140,6 +145,6 @@ public class SelfDriving {
     public void start(MainActivity mainActivity){
         Log.i("selfdriving", "starting..");
         activity = mainActivity;
-        heroku_readLastCommand();
+        selfdriving_step();
     }
 }
