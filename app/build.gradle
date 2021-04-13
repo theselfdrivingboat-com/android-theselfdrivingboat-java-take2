@@ -37,4 +37,6 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
     implementation 'com.android.volley:volley:1.2.0'
+
+    implementation "com.influxdb:influxdb-client-java:2.1.0"
 }
