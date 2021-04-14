@@ -39,11 +39,10 @@ public class InfluxDBWrites {
 
         StrictMode.setThreadPolicy(policy);
         OkHttpClient client = new OkHttpClient();
+        long unixTime = System.currentTimeMillis() / 1000L;
         String postBody = ""
-                + "mem,host=host1 used_percent=23.43234543 1556896326\n"
-                + "mem,host=host2 used_percent=26.81522361 1556896326\n"
-                + "mem,host=host1 used_percent=22.52984738 1556896336\n"
-                + "mem,host=host2 used_percent=27.18294630 1556896336\n";
+                + "charge,host=host1 used_percent=23.43234543 "+String.valueOf(unixTime)+"\n";
+
 
         Request request;
         request = new Request.Builder()
