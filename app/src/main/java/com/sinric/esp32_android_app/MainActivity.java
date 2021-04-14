@@ -171,8 +171,6 @@ public class MainActivity extends AppCompatActivity implements  OnBluetoothDevic
         }
     };
 
-
-
     private void scanLeDevice(boolean enable) {
         if (enable) {
             mHandler.postDelayed(new Runnable() {

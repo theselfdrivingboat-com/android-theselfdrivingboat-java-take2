@@ -148,6 +148,8 @@ public class SelfDriving {
 
         // Access the RequestQueue through your singleton class.
         requestQueue.add(jsonObjectRequest);
+
+        InfluxDBWrites.sendBluetoothStatus(activity);
     }
 
     private void testDrive(){
