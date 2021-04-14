@@ -21,6 +21,7 @@ public class SelfDriving {
     MainActivity activity;
     String last_command; // "FORWARD", .. , ""
     int clock = 10;
+    boolean testing_motors = false;
 
     private void boatStop(){
         sendStringToESP32("5");
@@ -54,6 +55,12 @@ public class SelfDriving {
         sendStringToESP32("8");
     }
 
+    private void boatTestMotors(){
+        boatForward();
+        boatStop();
+        boatBackward();
+    }
+
     private void runHerokuCommand(String command){
         switch(command) {
             case "FORWARD":
@@ -68,15 +75,18 @@ public class SelfDriving {
             case "BACK":
                 boatBackward();
                 break;
+            case "TEST-MOTORS":
+                testing_motors = true;
+                break;
             default:
                 boatStop();
         }
     }
 
     private void sendStringToESP32(String value){
-        Log.i("alex", "sleeping 1");
+        Log.i("alex", "sleeping 3");
         try {
-            TimeUnit.SECONDS.sleep(1);
+            TimeUnit.SECONDS.sleep(3);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -100,11 +110,15 @@ public class SelfDriving {
                             if(response.getString("command") == "null"){
                                 last_command = "null";
                             } else {
+                                testing_motors = false;
                                 last_command = response.getJSONArray("command").getString(0);
                             }
                             Log.i("selfdriving", last_command);
                             boatStop();
                             boatLowPower();
+                            if (testing_motors) {
+                                boatTestMotors();
+                            }
                             runHerokuCommand(last_command);
                             try {
                                 TimeUnit.SECONDS.sleep(1);

@@ -1,39 +1,63 @@
 package com.sinric.esp32_android_app;
 
-import java.time.Instant;
-import java.util.List;
+import android.os.StrictMode;
+import android.util.Log;
 
-import com.influxdb.annotations.Column;
-import com.influxdb.annotations.Measurement;
-import com.influxdb.client.InfluxDBClient;
-import com.influxdb.client.InfluxDBClientFactory;
-import com.influxdb.client.QueryApi;
-import com.influxdb.client.WriteApi;
-import com.influxdb.client.domain.WritePrecision;
-import com.influxdb.client.write.Point;
-import com.influxdb.query.FluxRecord;
-import com.influxdb.query.FluxTable;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class InfluxDBWrites {
+    // https://docs.influxdata.com/influxdb/cloud/api/#operation/PostWrite
 
-    private static char[] token = "XKGbhSKhGFiGATUD9rk9GphKjvJOsbdJSxbAJE8Al24oHN4GLSIcTpYYnV2VZ_5YgWc_094i1E6q5vKxAmT4hQ==".toCharArray();
+    private static String token = "XKGbhSKhGFiGATUD9rk9GphKjvJOsbdJSxbAJE8Al24oHN4GLSIcTpYYnV2VZ_5YgWc_094i1E6q5vKxAmT4hQ==";
     private static String org = "5dbd651117628225";
-    private static String bucket = "215b2aa6f4279d45";
+    private static String bucket = "alessandro.solbiati%27s%20Bucket";
+    private static String url = "https://westeurope-1.azure.cloud2.influxdata.com/api/v2/write?org=5dbd651117628225&bucket=alessandro.solbiati%27s%20Bucket&precision=s";
 
-    public static void main(final String[] args) {
+    public static final MediaType MEDIA_TYPE_PLAIN
+            = MediaType.parse("text/plain; charset=utf-8");
 
-        InfluxDBClient influxDBClient = InfluxDBClientFactory.create("http://localhost:8086", token, org, bucket);
 
-        WriteApi writeApi = influxDBClient.getWriteApi();
+    public static void HTTPwrite() {
+        // TODO: https://stackoverflow.com/questions/6343166/how-to-fix-android-os-networkonmainthreadexception#_=_
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 
-        Point point = Point.measurement("temperature")
-                .addTag("location", "west")
-                .addField("value", 55D)
-                .time(System.currentTimeMillis(), WritePrecision.MS);
+        StrictMode.setThreadPolicy(policy);
+        OkHttpClient client = new OkHttpClient();
+        String postBody = ""
+                + "mem,host=host1 used_percent=23.43234543 1556896326\n"
+                + "mem,host=host2 used_percent=26.81522361 1556896326\n"
+                + "mem,host=host1 used_percent=22.52984738 1556896336\n"
+                + "mem,host=host2 used_percent=27.18294630 1556896336\n";
 
-        writeApi.writePoint(point);
+        Request request;
+        request = new Request.Builder()
+                .url(url)
+                .header("Authorization", "Token XKGbhSKhGFiGATUD9rk9GphKjvJOsbdJSxbAJE8Al24oHN4GLSIcTpYYnV2VZ_5YgWc_094i1E6q5vKxAmT4hQ==")
+                .post(RequestBody.create(MEDIA_TYPE_PLAIN, postBody))
+                .build();
+        try {
+            Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
 
-        influxDBClient.close();
+            System.out.println(response.body().string());
+        } catch (Exception e) {
+            Log.i("influxdb", String.valueOf(e));
+        }
     }
-
 }

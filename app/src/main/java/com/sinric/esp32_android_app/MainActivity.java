@@ -36,6 +36,9 @@ import android.widget.ListView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+
+import org.json.JSONException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -68,6 +71,13 @@ public class MainActivity extends AppCompatActivity implements  OnBluetoothDevic
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        try {
+            InfluxDBWrites.HTTPwrite();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         setContentView(R.layout.activity_main);
 
         initView();
