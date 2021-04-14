@@ -32,17 +32,36 @@ public class InfluxDBWrites {
     public static final MediaType MEDIA_TYPE_PLAIN
             = MediaType.parse("text/plain; charset=utf-8");
 
+    private static String lineProtocol(
+            String measurement,
+            String tagk,
+            String tagv,
+            String pointk,
+            String pointv){
+        long unixTime = System.currentTimeMillis() / 1000L;
+        return String.format("%s,%s=%s %s=%s %s\n",measurement,tagk,tagv,pointk,pointv,String.valueOf(unixTime));
+    }
 
-    public static void HTTPwrite() {
+    public static void sendBluetoothStatus(MainActivity activity) {
+        HTTPwrite("bluetooth",
+                "device", "BV5500",
+                "status", "\"" + activity.mConnectionState + "\"");
+    }
+
+    private static void HTTPwrite(
+            String measurement,
+            String tagk,
+            String tagv,
+            String pointk,
+            String pointv){
         // TODO: https://stackoverflow.com/questions/6343166/how-to-fix-android-os-networkonmainthreadexception#_=_
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 
         StrictMode.setThreadPolicy(policy);
         OkHttpClient client = new OkHttpClient();
-        long unixTime = System.currentTimeMillis() / 1000L;
-        String postBody = ""
-                + "charge,host=host1 used_percent=23.43234543 "+String.valueOf(unixTime)+"\n";
-
+        String postBody = lineProtocol(measurement,
+                tagk, tagv,
+                pointk, pointv);
 
         Request request;
         request = new Request.Builder()

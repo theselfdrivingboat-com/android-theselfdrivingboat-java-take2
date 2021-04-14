@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements  OnBluetoothDevic
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 2;
     public static final String EXTRAS_DEVICE_NAME = "extras_device_name";
     public static final String EXTRAS_DEVICE_ADDRESS = "extras_device_address";
-    private String mConnectionState = BluetoothLeService.ACTION_GATT_DISCONNECTED;
+    public String mConnectionState = BluetoothLeService.ACTION_GATT_DISCONNECTED;
 
     private static final int REQUEST_ENABLE_BT = 1;
     private static final long SCAN_PERIOD = 1000 * 10;
@@ -71,12 +71,7 @@ public class MainActivity extends AppCompatActivity implements  OnBluetoothDevic
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        try {
-            InfluxDBWrites.HTTPwrite();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        InfluxDBWrites.sendBluetoothStatus(MainActivity.this);
 
         setContentView(R.layout.activity_main);
 
